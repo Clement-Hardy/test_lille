@@ -1,5 +1,9 @@
 library(dplyr)
-#library(prophet)
+library(prophet)
+library(MLmetrics)
+library(progress)
+
+
 
 read_data <- function(type_data="train"){
   
@@ -40,10 +44,3 @@ data_to_timeseries <- function(data){
   return(data)
 }
 
-
-prophet_fit_predict <- function(train, period=12){
-  data <- data.frame(ds=train$Date, y=train$y)
-  model <- prophet(data)
-  future <- make_future_dataframe(model, periods = period)
-  return(future)
-}
