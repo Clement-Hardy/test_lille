@@ -8,6 +8,24 @@ fit_predict <- function(data, model, period=12, only_future=TRUE){
     return (pred)
     
   }
+  
+  if (model=="tbats"){
+    pred <- tbats_fit_predict(train = data,
+                              period = period)
+    if (only_future){
+      return (pred%>%top_n(period, wt=ds))
+    }
+    return (pred)
+  }
+  
+  if (model=="RF"){
+    pred <- tbats_fit_predict(train = data,
+                              period = period)
+    if (only_future){
+      return (pred%>%top_n(period, wt=ds))
+    }
+    return (pred)
+  } 
 }
 
 cross_val_store <- function(model, data, nb_samples=3, period=12){
