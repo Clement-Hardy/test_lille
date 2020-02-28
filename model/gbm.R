@@ -7,14 +7,14 @@ gbm_fit_predict <- function(train, test, only_future=TRUE){
   test <- test %>% subset(select=-Date)
   model <- gbm(formula = y ~ .,
                 data = train,
-                n.trees = 5000,
+                n.trees = 400,
                 interaction.depth = 1,
                 n.minobsinnode =9,
-                shrinkage=0.005,
+                shrinkage=0.05,
                 distribution = "laplace",
                 verbose=FALSE)
   if (only_future){
-    pred <- predict(model, newdata=test, n.trees=5000)
+    pred <- predict(model, newdata=test, n.trees=400)
   }
   else{
     pred <- c(predict(model, newdata=X_train), predict(model, newdata=X_test))

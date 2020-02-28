@@ -33,15 +33,35 @@ generate_delete_variables <- function(data){
     data_temp <- data %>% filter(Store==i)
     temp <- data_temp$CPI
     data_temp$CPI[13:length(temp)] <- temp[1:(length(temp)-12)]
+    
+    temp <- data_temp$Temperature
+    data_temp$Temperature[13:length(temp)] <- temp[1:(length(temp)-13)]
+    #data_temp$Temperature1[12:length(temp)] <- temp[2:(length(temp)-12)]
+    
+    temp <- data_temp$Fuel_Price
+    data_temp$Fuel_Price[12:length(temp)] <- temp[1:(length(temp)-12)]
+    
+    
     temp <- data_temp$Unemployment
     data_temp$Unemployment[13:length(temp)] <- temp[1:(length(temp)-12)]
+    
+    temp <- data_temp$y 
+    data_temp <- data_temp %>% slice(14:(dim(data_temp)[1]))
+    data_temp$y1 <- temp[2:(length(temp)-12)] - temp[1:(length(temp)-13)]
+    data_temp$y2 <- temp[1:(length(temp)-13)]
+    #data_temp$y3 <- temp[3:(length(temp)-14)]
+    #data_temp$y4 <- temp[2:(length(temp)-15)]
+    #data_temp$y5 <- temp[1:(length(temp)-16)]
     final_data <- rbind(final_data, data_temp)
   }
-  
   
   #final_data <- final_data %>% subset(select=-Date)
   final_data <- final_data %>% subset(select=-Fuel_Price)
   final_data <- final_data %>% subset(select=-Temperature)
+  final_data <- final_data %>% subset(select=-year)
+  final_data <- final_data %>% subset(select=-IsHoliday)
+  final_data <- final_data %>% subset(select=-Unemployment)
+  final_data <- final_data %>% subset(select=-MarkDown2)
   return (final_data)
 }
 

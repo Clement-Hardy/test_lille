@@ -108,7 +108,7 @@ cross_val_all_store <- function(model, data, nb_samples=3, period=12){
   
   pb <- progress_bar$new(
     format = "  Cross validating [:bar] :percent eta: :eta",
-    total = 100, clear = FALSE, width= 60)
+    total = 45, clear = FALSE, width= 60)
   for (i in unique(data$Store)){
     pb$tick()
     metric <- cross_val_store(model=model,
