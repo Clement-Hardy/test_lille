@@ -27,6 +27,7 @@ generate_delete_variables <- function(data){
   data$week <- week(as.Date(data$Date))
   data$year <- year(as.Date(data$Date))
   data$Type <- as.numeric(data$Type)
+  data$IsHoliday <- as.numeric(data$IsHoliday)
   final_data <- data.frame()
   for (i in unique(data$Store)){
     data_temp <- data %>% filter(Store==i)
@@ -38,7 +39,7 @@ generate_delete_variables <- function(data){
   }
   
   
-  final_data <- final_data %>% subset(select=-Date)
+  #final_data <- final_data %>% subset(select=-Date)
   final_data <- final_data %>% subset(select=-Fuel_Price)
   final_data <- final_data %>% subset(select=-Temperature)
   return (final_data)
