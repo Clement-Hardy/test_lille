@@ -1,5 +1,4 @@
-library(caret)
-
+library(forecast)
 
 
 nnetar_fit_predict <- function(train, period=12, only_future=TRUE){
