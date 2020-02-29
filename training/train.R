@@ -5,7 +5,6 @@ fit_predict <- function(data, model, period=12, only_future=TRUE, data_test=NULL
     if (only_future){
       return (pred%>%top_n(period, wt=ds))
     }
-    return (pred)
     
   }
   
@@ -15,42 +14,41 @@ fit_predict <- function(data, model, period=12, only_future=TRUE, data_test=NULL
     if (only_future){
       return (pred%>%top_n(period, wt=ds))
     }
-    return (pred)
   }
   
   if (model=="RF"){
     pred <- RF_fit_predict(train = data,
                            test=data_test,
                            only_future=only_future)
-    return (pred)
   } 
   if (model=="xgboost"){
     pred <- xgboost_fit_predict(train = data,
                                 test=data_test,
                                 only_future=only_future)
-    return (pred)
   } 
   if (model=="gbm"){
     pred <- gbm_fit_predict(train = data,
                             test=data_test,
                             only_future=only_future)
-    return (pred)
   }
-  print("eeee")
   if (model=="elm"){
     pred <- elm_fit_predict(train = data,
                             period=period,
                             only_future=only_future)
     
-    return (pred)
+  }
+  if (model=="mlp"){
+    pred <- elm_fit_predict(train = data,
+                            period=period,
+                            only_future=only_future)
+    
   }
   if (model=="autoarima"){
     pred <- autoarima_fit_predict(train = data,
                                   period=period,
                                   only_future=only_future)
-    return (pred)
   }
-  
+  return (pred)
 }
 
 
