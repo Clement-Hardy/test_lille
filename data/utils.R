@@ -35,11 +35,11 @@ generate_delete_variables <- function(data){
     data_temp$CPI[13:length(temp)] <- temp[1:(length(temp)-12)]
     
     temp <- data_temp$Temperature
-    data_temp$Temperature[13:length(temp)] <- temp[1:(length(temp)-13)]
+    #data_temp$Temperature[13:length(temp)] <- temp[1:(length(temp)-13)]
     #data_temp$Temperature1[12:length(temp)] <- temp[2:(length(temp)-12)]
     
     temp <- data_temp$Fuel_Price
-    data_temp$Fuel_Price[12:length(temp)] <- temp[1:(length(temp)-12)]
+    #data_temp$Fuel_Price[12:length(temp)] <- temp[1:(length(temp)-12)]
     
     
     temp <- data_temp$Unemployment
@@ -55,7 +55,7 @@ generate_delete_variables <- function(data){
     final_data <- rbind(final_data, data_temp)
   }
   
-  #final_data <- final_data %>% subset(select=-Date)
+  
   final_data <- final_data %>% subset(select=-Fuel_Price)
   final_data <- final_data %>% subset(select=-Temperature)
   final_data <- final_data %>% subset(select=-year)
@@ -67,7 +67,8 @@ generate_delete_variables <- function(data){
 
 
 
-prepare_data <- function(type_data="train"){
+
+prepare_data <- function(type_data="train", add_variable=TRUE){
   data <- read_data(type_data = type_data)
   stores <- read_data(type_data = "stores")
   features <- read_data(type_data = "features")
@@ -77,14 +78,16 @@ prepare_data <- function(type_data="train"){
   }
   data <- merge(data, stores) %>% merge(features)
   data[is.na(data)] <- 0
-  data <- generate_delete_variables(data=data)
+  if (add_variable){
+    data <- generate_delete_variables(data=data)
+  }
   return(data)
 }
 
 
 
 data_to_timeseries <- function(data){
-  data <- group_by(data, Store, Date)  %>% summarise(y=sum(Weekly_Sales))
+  data <- data %>% group_by(Store, Date)  %>% summarise(y=sum(Weekly_Sales))
   return(data)
 }
 
