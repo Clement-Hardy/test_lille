@@ -20,8 +20,8 @@ fit_predict <- function(data, model, period=12, only_future=TRUE, data_test=NULL
   
   if (model=="RF"){
     pred <- RF_fit_predict(train = data,
-                          test=data_test,
-                          only_future=only_future)
+                           test=data_test,
+                           only_future=only_future)
     return (pred)
   } 
   if (model=="xgboost"){
@@ -36,6 +36,21 @@ fit_predict <- function(data, model, period=12, only_future=TRUE, data_test=NULL
                             only_future=only_future)
     return (pred)
   }
+  print("eeee")
+  if (model=="elm"){
+    pred <- elm_fit_predict(train = data,
+                            period=period,
+                            only_future=only_future)
+    
+    return (pred)
+  }
+  if (model=="autoarima"){
+    pred <- autoarima_fit_predict(train = data,
+                                  period=period,
+                                  only_future=only_future)
+    return (pred)
+  }
+  
 }
 
 
@@ -74,36 +89,61 @@ build_train_val <- function(data, period, num_sample=1){
 
 
 
-cross_val_store <- function(model, data, nb_samples=3, period=12){
+cross_val_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE){
   metrics <- list(rmse=c(), rmspe=c())
   for (i in 1:nb_samples){
-    #nb_index <- dim(data)[1] - i*period
-    #data_temp <- data %>% top_n(-nb_index, wt=Date)
-    temp <- build_train_val(data=data,
-                            period=period,
-                            num_sample = i)
-    data_train <- temp[[1]]
-    data_val <- temp[[2]]
-    pred <- fit_predict(data=data_train,
-                        model=model,
-                        period=period,
-                        only_future = TRUE,
-                        data_test = data_val)
-    #data_pred <- (data%>%slice((nb_index+1):(nb_index+12)))
-    metrics$rmse <- c(metrics$rmse, RMSE(pred$yhat, data_val$y))
-    metrics$rmspe <- c(metrics$rmspe, RMSPE(pred$yhat, data_val$y))
-    #plot(data_val$y,type='l')
-    #lines(pred$yhat,col="red")
+    if (by_dept==FALSE){
+      temp <- build_train_val(data=data,
+                              period=period,
+                              num_sample = i)
+      data_train <- temp[[1]]
+      data_val <- temp[[2]]
+      pred <- fit_predict(data=data_train,
+                          model=model,
+                          period=period,
+                          only_future = TRUE,
+                          data_test = data_val)
+      metrics$rmse <- c(metrics$rmse, RMSE(pred$yhat, data_val$y))
+      metrics$rmspe <- c(metrics$rmspe, RMSPE(pred$yhat, data_val$y))
+    }
+    else{
+      sum_pred <- replicate(period, 0)
+      sum_y_test <- replicate(period, 0)
+      for (j in unique(data$Dept)){
+        temp_data <- data %>% filter(Dept==j)
+        if (dim(temp_data)[1]>100){
+          temp <-  build_train_val(data = temp_data,
+                                   period=period,
+                                   num_sample = i)
+        
+          data_train <- temp[[1]]
+          data_val <- temp[[2]]
+          pred <- fit_predict(data=data_train,
+                              model=model,
+                              period=period,
+                              only_future = TRUE,
+                              data_test = data_val)
+ 
+          if(any(is.na(pred$yhat))==FALSE & any(is.na(data_val$y))==FALSE){
+           sum_pred <- sum_pred + pred$yhat
+           sum_y_test <- sum_y_test + data_val$y
+          }
+        }
+      }
+      metrics$rmse <- c(metrics$rmse, RMSE(sum_pred, sum_y_test))
+      metrics$rmspe <- c(metrics$rmspe, RMSPE(sum_pred, sum_y_test))
+    }
   }
   metrics$mean_rmse <- mean(metrics$rmse)
   metrics$mean_rmspe <- mean(metrics$rmspe)
+  print(metrics)
   return (metrics)
 }
 
 
 
 
-cross_val_all_store <- function(model, data, nb_samples=3, period=12){
+cross_val_all_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE){
   metrics <- list(rmse=c(), mean_rmse=c(), rmspe=c())
   
   pb <- progress_bar$new(
@@ -114,10 +154,12 @@ cross_val_all_store <- function(model, data, nb_samples=3, period=12){
     metric <- cross_val_store(model=model,
                               data=filter(data,Store==i),
                               nb_samples = nb_samples,
-                              period = period)
+                              period = period,
+                              by_dept=by_dept)
     
     metrics$rmse <- c(metrics$rmse, metric$rmse)
     metrics$rmspe <- c(metrics$rmspe, metric$rmspe)
+    
   }
   metrics$mean_rmse <- mean(metrics$rmse)
   metrics$mean_rmspe <- mean(metrics$rmspe)

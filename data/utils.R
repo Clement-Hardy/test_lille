@@ -68,14 +68,16 @@ generate_delete_variables <- function(data){
 
 
 
-prepare_data <- function(type_data="train", add_variable=TRUE){
+prepare_data <- function(type_data="train", add_variable=TRUE, sum_store=TRUE){
   data <- read_data(type_data = type_data)
   stores <- read_data(type_data = "stores")
   features <- read_data(type_data = "features")
   
   if (type_data=="train"){
-    data <- data_to_timeseries(data = data)
+    data <- data_to_timeseries(data = data,
+                               sum_store = sum_store)
   }
+  data$y[data$y<0] <- 0
   data <- merge(data, stores) %>% merge(features)
   data[is.na(data)] <- 0
   if (add_variable){
@@ -86,8 +88,14 @@ prepare_data <- function(type_data="train", add_variable=TRUE){
 
 
 
-data_to_timeseries <- function(data){
-  data <- data %>% group_by(Store, Date)  %>% summarise(y=sum(Weekly_Sales))
+data_to_timeseries <- function(data, sum_store=TRUE){
+  if (sum_store){
+    data <- data %>% group_by(Store, Date)  %>% summarise(y=sum(Weekly_Sales))
+  }
+  else{
+    colnames(data)[4] <- "y" 
+  }
+  
   return(data)
 }
 
