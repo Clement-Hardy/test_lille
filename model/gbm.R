@@ -18,7 +18,8 @@ gbm_fit_predict <- function(train, test, only_future=TRUE, optimized=TRUE){
   }else{
     model <- gbm(formula = y~.,
                  data=train,
-                 verbose=FALSE)
+                 verbose=FALSE,
+                 distribution = "gaussian")
   }
   if (only_future){
     pred <- predict(model, newdata=test, n.trees=400)

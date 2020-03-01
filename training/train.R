@@ -53,7 +53,12 @@ fit_predict <- function(data, model, period=12, only_future=TRUE, data_test=NULL
   if (model=="nnetar"){
     pred <- nnetar_fit_predict(train = data,
                                period=period,
-                              only_future=only_future)
+                               only_future=only_future)
+  }
+  if (model=="hw"){
+    pred <- hw_fit_predict(train = data,
+                           period=period,
+                           only_future=only_future)
   }
   return (pred)
 }
