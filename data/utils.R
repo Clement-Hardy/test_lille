@@ -22,13 +22,14 @@ read_data <- function(type_data="train"){
 }
 
 
-generate_delete_variables <- function(data){
+generate_delete_variables <- function(data, add_semi_time=FALSE){
   data$month <- month(as.Date(data$Date))
   data$week <- week(as.Date(data$Date))
   data$year <- year(as.Date(data$Date))
   data$Type <- as.numeric(data$Type)
   data$IsHoliday <- as.numeric(data$IsHoliday)
   final_data <- data.frame()
+  
   for (i in unique(data$Store)){
     data_temp <- data %>% filter(Store==i)
     temp <- data_temp$CPI
@@ -47,8 +48,10 @@ generate_delete_variables <- function(data){
     
     temp <- data_temp$y 
     data_temp <- data_temp %>% slice(14:(dim(data_temp)[1]))
-    data_temp$y1 <- temp[2:(length(temp)-12)] - temp[1:(length(temp)-13)]
-    data_temp$y2 <- temp[1:(length(temp)-13)]
+    if(add_semi_time){
+      data_temp$y1 <- temp[2:(length(temp)-12)] - temp[1:(length(temp)-13)]
+      data_temp$y2 <- temp[1:(length(temp)-13)]
+    }
     #data_temp$y3 <- temp[3:(length(temp)-14)]
     #data_temp$y4 <- temp[2:(length(temp)-15)]
     #data_temp$y5 <- temp[1:(length(temp)-16)]
@@ -57,7 +60,7 @@ generate_delete_variables <- function(data){
   
   
   final_data <- final_data %>% subset(select=-Fuel_Price)
-  final_data <- final_data %>% subset(select=-Temperature)
+  #final_data <- final_data %>% subset(select=-Temperature)
   final_data <- final_data %>% subset(select=-year)
   final_data <- final_data %>% subset(select=-IsHoliday)
   final_data <- final_data %>% subset(select=-Unemployment)
@@ -68,7 +71,7 @@ generate_delete_variables <- function(data){
 
 
 
-prepare_data <- function(type_data="train", add_variable=TRUE, sum_store=TRUE){
+prepare_data <- function(type_data="train", add_variable=TRUE, sum_store=TRUE, add_semi_time=FALSE){
   data <- read_data(type_data = type_data)
   stores <- read_data(type_data = "stores")
   features <- read_data(type_data = "features")
@@ -81,7 +84,8 @@ prepare_data <- function(type_data="train", add_variable=TRUE, sum_store=TRUE){
   data <- merge(data, stores) %>% merge(features)
   data[is.na(data)] <- 0
   if (add_variable){
-    data <- generate_delete_variables(data=data)
+    data <- generate_delete_variables(data=data,
+                                      add_semi_time = add_semi_time)
   }
   return(data)
 }

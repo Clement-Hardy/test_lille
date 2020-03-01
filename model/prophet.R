@@ -6,7 +6,8 @@ prophet_make_future <- function(train, period=12){
   ## Temperature
   data <- data.frame(ds=train$ds, y=train$Temperature)
   model <- prophet(daily.seasonality = FALSE,
-                   weekly.seasonality = FALSE)
+                   weekly.seasonality = FALSE,
+                   yearly.seasonality=TRUE)
   
   model <- fit.prophet(model, data)
   future <- make_future_dataframe(model, periods = period,
@@ -38,11 +39,12 @@ prophet_make_future <- function(train, period=12){
 
 
 
-prophet_fit_predict <- function(train, period=12, add_reg=TRUE){
+prophet_fit_predict <- function(train, period=12, add_reg=FALSE){
   data <- data.frame(ds=train$Date, y=log(train$y),
                      Temperature=train$Temperature)
   model <- prophet(daily.seasonality = FALSE,
-                   weekly.seasonality = FALSE)
+                   weekly.seasonality = FALSE,
+                   yearly.seasonality=TRUE)
   
   model <- add_seasonality(model, name='monthly',
                            period=30.5, fourier.order=1)
