@@ -22,7 +22,7 @@ print("Run all algo")
 result <- data.frame()
 pred_arima <- cross_val_all_store("autoarima", data)
 result <- rbind(result, c(pred_arima$mean_rmse, pred_arima$mean_rmspe))
-colnames(result) <- c("rmse", "rmspe")
+colnames(result) <- c("mean rmse", "mean rmspe")
 rownames(result)[1] <- c("arima")
 
 pred_prophet <- cross_val_all_store("prophet", data)
@@ -44,6 +44,8 @@ rownames(result)[5] <- c("mlp")
 pred_nnetar <- cross_val_all_store("nnetar", data)
 result <- rbind(result, c(pred_nnetar$mean_rmse, pred_nnetar$mean_rmspe))
 rownames(result)[6] <- c("nnetar")
+
+
 
 pred_gbm <- cross_val_all_store("gbm", data)
 result <- rbind(result, c(pred_gbm$mean_rmse, pred_gbm$mean_rmspe))
@@ -70,7 +72,7 @@ result1 <- data.frame()
 pred_prophet_with <- cross_val_all_store("prophet", data, add_reg = TRUE)
 result1 <- rbind(result1, c(pred_prophet$mean_rmse, pred_prophet$mean_rmspe))
 rownames(result1)[1] <- c("prophet_without")
-colnames(result1) <- c("rmse", "rmspe")
+colnames(result1) <- c("mean rmse", "mean rmspe")
 result1 <- rbind(result1, c(pred_prophet_with$mean_rmse, pred_prophet_with$mean_rmspe))
 rownames(result1)[2] <- c("prophet_with")
 
@@ -85,7 +87,7 @@ result2 <- data.frame()
 data <- prepare_data(add_variable = TRUE, add_semi_time=TRUE)
 pred_RF_with <- cross_val_all_store("gbm", data)
 result2 <- rbind(result2, c(pred_RF$mean_rmse, pred_RF$mean_rmspe))
-colnames(result2) <- c("rmse", "rmspe")
+colnames(result2) <- c("mean rmse", "mean rmspe")
 rownames(result2)[1] <- c("RF_without")
 result2 <- rbind(result2, c(pred_RF_with$mean_rmse, pred_RF_with$mean_rmspe))
 rownames(result2)[2] <- c("RF_with")
@@ -101,8 +103,25 @@ data <- prepare_data(add_variable = TRUE, sum_store = FALSE)
 pred_gbm_not_sum <- cross_val_all_store("gbm", data, by_dept = TRUE)
 result3 <- rbind(result3, c(pred_gbm$mean_rmse, pred_gbm$mean_rmspe))
 rownames(result3)[1] <- c("gbm_sum_sale")
-colnames(result3) <- c("rmse", "rmspe")
+colnames(result3) <- c("mean rmse", "mean rmspe")
 result3 <- rbind(result3, c(pred_gbm_not_sum$mean_rmse, pred_gbm_not_sum$mean_rmspe))
 rownames(result3)[2] <- c("gbm_not_sum_sale")
 
 pander(result3)
+
+
+
+
+
+print("Compare optimized gbm")
+result4 <- data.frame()
+data <- prepare_data(add_variable = TRUE)
+pred_gbm <- cross_val_all_store("gbm", data)
+pred_gbm_not_optimized <- cross_val_all_store("gbm", data, optimized = FALSE)
+result4 <- rbind(result4, c(pred_gbm$mean_rmse, pred_gbm$mean_rmspe))
+rownames(result4)[1] <- c("gbm_optimized")
+colnames(result4) <- c("mean rmse", "mean rmspe")
+result4 <- rbind(result4, c(pred_gbm_not_optimized$mean_rmse, pred_gbm_not_optimized$mean_rmspe))
+rownames(result4)[2] <- c("gbm_not_optimized")
+
+pander(result4)
