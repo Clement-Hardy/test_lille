@@ -50,7 +50,7 @@ prophet_fit_predict <- function(train, period=12, add_reg=FALSE){
                            period=30.5, fourier.order=1)
   if (add_reg){
     model <- add_regressor(model, "Temperature",
-                            mode='additive')
+                            mode='multiplicative')
   }
 
   model <- fit.prophet(model, data)

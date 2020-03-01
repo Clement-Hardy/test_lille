@@ -1,4 +1,4 @@
-fit_predict <- function(data, model, period=12, only_future=TRUE, data_test=NULL, add_reg=FALSE){
+fit_predict <- function(data, model, period=12, only_future=TRUE, data_test=NULL, add_reg=FALSE, optimized=TRUE){
   if (model=="prophet"){
     pred <- prophet_fit_predict(train = data,
                                 period = period,
@@ -30,7 +30,8 @@ fit_predict <- function(data, model, period=12, only_future=TRUE, data_test=NULL
   if (model=="gbm"){
     pred <- gbm_fit_predict(train = data,
                             test=data_test,
-                            only_future=only_future)
+                            only_future=only_future,
+                            optimized=optimized)
   }
   if (model=="elm"){
     pred <- elm_fit_predict(train = data,
@@ -93,7 +94,7 @@ build_train_val <- function(data, period, num_sample=1){
 
 
 
-cross_val_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE, add_reg=FALSE){
+cross_val_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE, add_reg=FALSE, optimized=TRUE){
   metrics <- list(rmse=c(), rmspe=c())
   for (i in 1:nb_samples){
     if (by_dept==FALSE){
@@ -107,7 +108,8 @@ cross_val_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE,
                           period=period,
                           only_future = TRUE,
                           data_test = data_val,
-                          add_reg=add_reg)
+                          add_reg=add_reg,
+                          optimized = optimized)
       metrics$rmse <- c(metrics$rmse, RMSE(pred$yhat, data_val$y))
       metrics$rmspe <- c(metrics$rmspe, RMSPE(pred$yhat, data_val$y))
     }
@@ -128,7 +130,8 @@ cross_val_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE,
                               period=period,
                               only_future = TRUE,
                               data_test = data_val,
-                              add_reg=add_reg)
+                              add_reg=add_reg,
+                              optimized=optimized)
  
           if(any(is.na(pred$yhat))==FALSE & any(is.na(data_val$y))==FALSE){
            sum_pred <- sum_pred + pred$yhat
@@ -148,7 +151,7 @@ cross_val_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE,
 
 
 
-cross_val_all_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE, add_reg=FALSE){
+cross_val_all_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE, add_reg=FALSE, optimized=TRUE){
   metrics <- list(rmse=c(), mean_rmse=c(), rmspe=c())
   
   pb <- progress_bar$new(
@@ -161,7 +164,8 @@ cross_val_all_store <- function(model, data, nb_samples=3, period=12, by_dept=FA
                               nb_samples = nb_samples,
                               period = period,
                               by_dept=by_dept,
-                              add_reg=add_reg)
+                              add_reg=add_reg,
+                              optimized=optimized)
     
     metrics$rmse <- c(metrics$rmse, metric$rmse)
     metrics$rmspe <- c(metrics$rmspe, metric$rmspe)
