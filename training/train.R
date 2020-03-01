@@ -1,7 +1,8 @@
-fit_predict <- function(data, model, period=12, only_future=TRUE, data_test=NULL){
+fit_predict <- function(data, model, period=12, only_future=TRUE, data_test=NULL, add_reg=FALSE){
   if (model=="prophet"){
     pred <- prophet_fit_predict(train = data,
-                                period = period)
+                                period = period,
+                                add_reg = add_reg)
     if (only_future){
       return (pred%>%top_n(period, wt=ds))
     }
@@ -48,6 +49,11 @@ fit_predict <- function(data, model, period=12, only_future=TRUE, data_test=NULL
                                   period=period,
                                   only_future=only_future)
   }
+  if (model=="nnetar"){
+    pred <- nnetar_fit_predict(train = data,
+                               period=period,
+                              only_future=only_future)
+  }
   return (pred)
 }
 
@@ -87,7 +93,7 @@ build_train_val <- function(data, period, num_sample=1){
 
 
 
-cross_val_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE){
+cross_val_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE, add_reg=FALSE){
   metrics <- list(rmse=c(), rmspe=c())
   for (i in 1:nb_samples){
     if (by_dept==FALSE){
@@ -100,7 +106,8 @@ cross_val_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE)
                           model=model,
                           period=period,
                           only_future = TRUE,
-                          data_test = data_val)
+                          data_test = data_val,
+                          add_reg=add_reg)
       metrics$rmse <- c(metrics$rmse, RMSE(pred$yhat, data_val$y))
       metrics$rmspe <- c(metrics$rmspe, RMSPE(pred$yhat, data_val$y))
     }
@@ -120,7 +127,8 @@ cross_val_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE)
                               model=model,
                               period=period,
                               only_future = TRUE,
-                              data_test = data_val)
+                              data_test = data_val,
+                              add_reg=add_reg)
  
           if(any(is.na(pred$yhat))==FALSE & any(is.na(data_val$y))==FALSE){
            sum_pred <- sum_pred + pred$yhat
@@ -134,26 +142,26 @@ cross_val_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE)
   }
   metrics$mean_rmse <- mean(metrics$rmse)
   metrics$mean_rmspe <- mean(metrics$rmspe)
-  print(metrics)
   return (metrics)
 }
 
 
 
 
-cross_val_all_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE){
+cross_val_all_store <- function(model, data, nb_samples=3, period=12, by_dept=FALSE, add_reg=FALSE){
   metrics <- list(rmse=c(), mean_rmse=c(), rmspe=c())
   
   pb <- progress_bar$new(
-    format = "  Cross validating [:bar] :percent eta: :eta",
-    total = 45, clear = FALSE, width= 60)
+    format = ":model cross validating [:bar] :percent eta: :eta",
+    total = length(unique(data$Store)), clear = FALSE, width= 60)
   for (i in unique(data$Store)){
-    pb$tick()
+    pb$tick(tokens=list(model=model))
     metric <- cross_val_store(model=model,
                               data=filter(data,Store==i),
                               nb_samples = nb_samples,
                               period = period,
-                              by_dept=by_dept)
+                              by_dept=by_dept,
+                              add_reg=add_reg)
     
     metrics$rmse <- c(metrics$rmse, metric$rmse)
     metrics$rmspe <- c(metrics$rmspe, metric$rmspe)
